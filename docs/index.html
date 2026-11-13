@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YouTube Video Size Calculator: MB for 360p to 1080p</title>
+<meta name="description" content="Free calculator for YouTube video file size. Enter the video length and see how many MB or GB it takes as an MP4 in 360p, 480p, 720p and 1080p.">
+<link rel="canonical" href="https://yt-video-downloader.github.io/youtube-video-size-calculator/">
+<style>
+:root{--bg:#0a0f1e;--card:#121a2e;--line:#22304d;--text:#e8ecf6;--muted:#9aa6c0;--accent:#5b8cff}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text)}
+main{max-width:760px;margin:0 auto;padding:44px 18px 64px}
+h1{font-size:2rem;line-height:1.2;margin:0 0 8px}
+h2{font-size:1.25rem;margin:40px 0 12px}
+p{color:var(--muted);margin:0 0 16px}
+a{color:#8fb1ff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:560px){.row{grid-template-columns:1fr}}
+label{display:block;font-weight:600;margin-bottom:6px}
+input,select{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:#070b16;color:var(--text);font-size:1rem}
+input[type=range]{padding:0}
+.hint{font-size:.85rem;color:var(--muted);margin-top:4px}
+table{width:100%;border-collapse:collapse;margin-top:16px;font-size:.98rem}
+td,th{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:600}
+td.big{font-weight:700;font-size:1.05rem}
+.err{color:#ff8a8a}
+footer{margin-top:48px;color:var(--muted);font-size:.9rem}
+</style>
+</head>
+<body>
+<main>
+<h1>YouTube video size calculator</h1>
+<p>Enter how long a YouTube video is and see roughly how much space it takes as an MP4 in each quality. Handy before you save a video to a phone that's nearly full, or download over mobile data.</p>
+
+<div class="card">
+<div class="row">
+<div>
+<label for="len">Video length</label>
+<input id="len" value="10:00" inputmode="text" autocomplete="off" spellcheck="false">
+<div class="hint">Type 10, 10:35, 1:02:03 or 1h 20m.</div>
+</div>
+<div>
+<label for="motion">What's in the video?</label>
+<select id="motion">
+<option value="0">Talking, slides, tutorials</option>
+<option value="0.5" selected>A mix (most videos)</option>
+<option value="1">Gaming, sports, fast action</option>
+</select>
+<div class="hint">More movement on screen means a bigger file.</div>
+</div>
+</div>
+<div style="margin-top:14px">
+<label for="store">Free space on your phone (GB)</label>
+<input id="store" value="16" inputmode="decimal">
+</div>
+<p id="err" class="err" hidden></p>
+<table id="out" aria-live="polite">
+<thead><tr><th>Quality</th><th>Estimated size</th><th>Range</th><th>Videos that fit</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+
+<h2>How the estimate works</h2>
+<p>YouTube MP4 files with H.264 video and AAC sound use roughly these amounts of space per minute. Calm videos sit at the low end and busy ones at the high end:</p>
+<table>
+<tr><th>Quality</th><th>Resolution</th><th>Per minute</th><th>10 minutes</th></tr>
+<tr><td>1080p</td><td>1920 x 1080</td><td>15 to 30 MB</td><td>150 to 300 MB</td></tr>
+<tr><td>720p</td><td>1280 x 720</td><td>8 to 13 MB</td><td>80 to 130 MB</td></tr>
+<tr><td>480p</td><td>854 x 480</td><td>4 to 6 MB</td><td>40 to 60 MB</td></tr>
+<tr><td>360p</td><td>640 x 360</td><td>2 to 3 MB</td><td>20 to 30 MB</td></tr>
+</table>
+<p>Real files can land a little outside these ranges, because every upload is encoded differently. A downloader that reads the actual stream sizes from YouTube will show the exact number.</p>
+
+<h2>Which quality should you pick?</h2>
+<p>On a phone, 720p looks almost as sharp as 1080p at about half the size. Use 1080p for a TV, a laptop or editing. On a tight data plan, 480p or 360p keeps a 10 minute video under 60 MB.</p>
+
+<h2>Get the video at the size you chose</h2>
+<p>To save a video in the quality you picked, paste its link into <a href="https://yt-video-downloader.net/">YT Video Downloader</a>, a free online YouTube video downloader. It lists every quality with its exact file size before you download. For Full HD, the <a href="https://yt-video-downloader.net/youtube-video-download-hd/">HD 1080p download page</a> explains when 1080p is available.</p>
+
+<footer><a href="https://github.com/yt-video-downloader/youtube-video-size-calculator">Source on GitHub</a> · MIT license · Not affiliated with YouTube or Google.</footer>
+</main>
+<script type="module">
+import { parseDuration, estimate, formatMB, fits } from "./size.js";
+const len = document.getElementById("len"), motion = document.getElementById("motion"), store = document.getElementById("store");
+const body = document.querySelector("#out tbody"), err = document.getElementById("err");
+function run() {
+  const s = parseDuration(len.value);
+  if (!s) { err.textContent = "Enter a length like 10, 10:35 or 1h 20m."; err.hidden = false; body.innerHTML = ""; return; }
+  if (s > 12 * 3600) { err.textContent = "That's longer than 12 hours. Check the length."; err.hidden = false; body.innerHTML = ""; return; }
+  err.hidden = true;
+  const gb = parseFloat(store.value);
+  body.innerHTML = estimate(s, Number(motion.value)).map((r) =>
+    `<tr><td>${r.label}</td><td class="big">${formatMB(r.mb)}</td><td>${formatMB(r.lowMB)} to ${formatMB(r.highMB)}</td><td>${gb > 0 ? fits(gb, r.mb).toLocaleString() : "-"}</td></tr>`).join("");
+}
+[len, motion, store].forEach((el) => el.addEventListener("input", run));
+run();
+</script>
+</body>
+</html>

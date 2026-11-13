@@ -1,0 +1,10 @@
+{
+  "name": "youtube-video-size-calculator",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Estimate how big a YouTube video will be as an MP4 in 360p, 480p, 720p and 1080p.",
+  "type": "module",
+  "scripts": { "test": "node test/test.mjs" },
+  "homepage": "https://yt-video-downloader.github.io/youtube-video-size-calculator/",
+  "license": "MIT"
+}
